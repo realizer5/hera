@@ -18,6 +18,7 @@ const rest = new REST().setToken(conf.token);
 
 try {
     console.log('Started refreshing application (/) commands.');
+    console.log(commandsArray);
 
     await rest.put(Routes.applicationCommands(conf.clientId), { body: commandsArray });
 

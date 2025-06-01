@@ -23,7 +23,11 @@ client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
     const commandPath = path.join(commandsDir, interaction.commandName);
     const res = await import(commandPath);
-    res.invoke(interaction);
+    try {
+        res.invoke(interaction);
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 client.on(Events.ClientReady, readyClient => {
