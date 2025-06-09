@@ -3,7 +3,10 @@ import conf from './conf/conf';
 import { readdirSync } from 'fs';
 import path from 'path';
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent]
+});
 
 client.commands = new Collection();
 
@@ -32,6 +35,20 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.on(Events.ClientReady, readyClient => {
     console.log(`Logged in as ${readyClient.user.tag}!`);
+});
+
+const prefix = "?";
+
+client.on("messageCreate", async (message) => {
+    if (!message.content.startsWith(prefix)) return;
+    const command = message.content.slice(prefix.length).split(" ")[0];
+    const commandPath = path.join(commandsDir, command);
+    const res = await import(commandPath);
+    try {
+        res.invoke(message);
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 
