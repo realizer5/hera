@@ -55,15 +55,9 @@ client.on("messageCreate", async (message) => {
 client.login(conf.token);
 
 // for hosting service
-import express from "express";
-const app = express()
-const port = 3000
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-})
-
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
-
+Bun.serve({
+    fetch(req) {
+        return new Response("Bun!");
+    },
+    port: 3000,
+});
