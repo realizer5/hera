@@ -6,11 +6,35 @@ const create = () => {
     return command.toJSON();
 };
 
+
 const invoke = (interaction) => {
-    const isInteraction = interaction.isChatInputCommand;
-    const target = isInteraction ? interaction.options.getUser("target") || interaction.user
-        : interaction.mentions.users.first() || interaction.author;
-    const user = isInteraction ? interaction.user : interaction.author;
+    if (interaction.isChatInputCommand) {
+        const target = interaction.options.getUser("target") || interaction.user;
+        const avatarURL = target.displayAvatarURL({ dynamic: true, size: 512 });
+        const embed = new EmbedBuilder().setTitle(target.username);
+        embed
+            .setColor("#DC143C")
+            .setFooter({
+                text: `Requested by ${interaction.user.username}`,
+                iconURL: interaction.user.displayAvatarURL({ dynamic: true, size: 64 })
+            })
+            .setImage(avatarURL);
+        interaction.reply({
+            embeds: [embed],
+        });
+    } else { invokeMsgCommand(interaction) }
+};
+
+const invokeMsgCommand = async (message) => {
+    let userId = message.content.split(" ")[1];
+    let target = null;
+    try {
+        target = await message.client.users.fetch(userId);
+    } catch (error) {
+        if (userId) return message.reply('⚠️ This is not a valid user ID format.');
+        target = message.mentions.users.first() || message.author;
+    }
+    const user = message.author;
     const avatarURL = target.displayAvatarURL({ dynamic: true, size: 512 });
     const embed = new EmbedBuilder().setTitle(target.username);
     embed
@@ -20,7 +44,7 @@ const invoke = (interaction) => {
             iconURL: user.displayAvatarURL({ dynamic: true, size: 64 })
         })
         .setImage(avatarURL);
-    interaction.reply({
+    message.reply({
         embeds: [embed],
     });
 };

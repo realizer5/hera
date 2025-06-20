@@ -5,7 +5,6 @@ const create = () => {
     const command = new SlashCommandBuilder().setName("server").setDescription("Replys with some basic information about this server!");
     return command.toJSON();
 };
-
 // Called by the interactionCreate event listener when the corresponding command is invoked
 const invoke = (interaction) => {
     const guild = interaction.guild;

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { MessageFlags, SlashCommandBuilder } from "discord.js";
 
 const create = () => {
     const command = new SlashCommandBuilder().setName("ping").setDescription("Reply with Pong!");
@@ -6,8 +6,7 @@ const create = () => {
 };
 
 const invoke = (interaction) => {
-    interaction.reply({ content: "Pong!" });
+    interaction.reply({ content: "Pong!", flags: MessageFlags.Ephemeral });
 };
-
 
 export { create, invoke };
