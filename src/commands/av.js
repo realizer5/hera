@@ -1,52 +1,55 @@
 import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
 
-const create = () => {
-    const command = new SlashCommandBuilder().setName("av").setDescription("Returns pfp of given User")
-        .addUserOption(option => option.setName("target").setDescription("Target user to get pfp").setRequired(false));
-    return command.toJSON();
-};
+const create = () =>
+    new SlashCommandBuilder()
+        .setName("av")
+        .setDescription("Returns pfp of given user")
+        .addUserOption((option) =>
+            option
+                .setName("target")
+                .setDescription("Target user")
+                .setRequired(false),
+        )
+        .toJSON();
 
-
-const invoke = (interaction) => {
-    if (interaction.isChatInputCommand) {
-        const target = interaction.options.getUser("target") || interaction.user;
-        const avatarURL = target.displayAvatarURL({ dynamic: true, size: 512 });
-        const embed = new EmbedBuilder().setTitle(target.username);
-        embed
-            .setColor("#DC143C")
-            .setFooter({
-                text: `Requested by ${interaction.user.username}`,
-                iconURL: interaction.user.displayAvatarURL({ dynamic: true, size: 64 })
-            })
-            .setImage(avatarURL);
-        interaction.reply({
-            embeds: [embed],
+const buildAvatarEmbed = (target, requester) =>
+    new EmbedBuilder()
+        .setTitle(target.username)
+        .setColor("#DC143C")
+        .setImage(target.displayAvatarURL({ dynamic: true, size: 512 }))
+        .setFooter({
+            text: `Requested by ${requester.username}`,
+            iconURL: requester.displayAvatarURL({ dynamic: true, size: 64 }),
         });
-    } else { invokeMsgCommand(interaction) }
+
+const invoke = async (interaction) => {
+    if (!interaction.isChatInputCommand) {
+        return invokeMsgCommand(interaction);
+    }
+
+    const target = interaction.options.getUser("target") ?? interaction.user;
+
+    await interaction.reply({
+        embeds: [buildAvatarEmbed(target, interaction.user)],
+    });
 };
 
 const invokeMsgCommand = async (message) => {
-    let userId = message.content.split(" ")[1];
-    let target = null;
-    try {
-        target = await message.client.users.fetch(userId);
-    } catch (error) {
-        if (userId) return message.reply('⚠️ This is not a valid user ID format.');
-        target = message.mentions.users.first() || message.author;
+    const args = message.content.trim().split(/\s+/);
+    const mentionedUser = message.mentions.users.first();
+    let target = mentionedUser;
+
+    if (!target && args[1]) {
+        try {
+            target = await message.client.users.fetch(args[1]);
+        } catch {
+            return message.reply("⚠️ Invalid user ID or mention.");
+        }
     }
-    const user = message.author;
-    const avatarURL = target.displayAvatarURL({ dynamic: true, size: 512 });
-    const embed = new EmbedBuilder().setTitle(target.username);
-    embed
-        .setColor("#DC143C")
-        .setFooter({
-            text: `Requested by ${user.username}`,
-            iconURL: user.displayAvatarURL({ dynamic: true, size: 64 })
-        })
-        .setImage(avatarURL);
-    message.reply({
-        embeds: [embed],
-    });
+
+    target ??= message.author;
+
+    await message.reply({ embeds: [buildAvatarEmbed(target, message.author)] });
 };
 
 export { create, invoke };

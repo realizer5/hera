@@ -1,63 +1,79 @@
-import { Client, Collection, Events, GatewayIntentBits } from 'discord.js';
-import conf from './conf/conf';
-import { readdirSync } from 'fs';
-import path from 'path';
+import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import { join } from "node:path";
+import { token, prefix } from "./conf/conf";
+
+const __dirname = import.meta.dir; // current directory of file
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
 });
 
 client.commands = new Collection();
 
-const commandsDir = path.join(__dirname, "commands");
-const commands = readdirSync(commandsDir).filter((file) => file.endsWith(".js"));
+const commandsDir = join(__dirname, "commands");
 
-const commandsArray = [];
+const glob = new Bun.Glob("*.js");
 
-for (let command of commands) {
-    const commandFile = await import(path.join(commandsDir, command));
-    commandsArray.push(commandFile.create());
-};
+for await (const file of glob.scan(commandsDir)) {
+    const filePath = join(commandsDir, file);
+    const command = await import(filePath);
+    if (!command.create || !command.invoke) {
+        console.warn(`[WARN] ${file} missing create() or invoke()`);
+        continue;
+    }
+    const commandData = command.create();
+    client.commands.set(commandData.name, command);
+}
 
-client.commands.set(commandsArray);
+console.log(`Loaded ${client.commands.size} commands`);
 
-client.on(Events.InteractionCreate, async interaction => {
+client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
-    const commandPath = path.join(commandsDir, interaction.commandName);
-    const res = await import(commandPath);
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
     try {
-        res.invoke(interaction);
+        await command.invoke(interaction);
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({
+                content: "Error executing command",
+                ephemeral: true,
+            });
+        }
     }
 });
 
-client.on(Events.ClientReady, readyClient => {
-    console.log(`Logged in as ${readyClient.user.tag}!`);
-});
-
-const prefix = "?";
-
-client.on("messageCreate", async (message) => {
+client.on(Events.MessageCreate, async (message) => {
+    if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
-    const command = message.content.slice(prefix.length).split(" ")[0];
-    const commandPath = path.join(commandsDir, command);
-    const res = await import(commandPath);
+    const args = message.content.slice(prefix.length).trim().split(/\s+/);
+    const commandName = args.shift()?.toLowerCase();
+    if (!commandName) return;
+    const command = client.commands.get(commandName);
+    if (!command) return;
     try {
-        res.invoke(message);
+        await command.invoke(message);
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        await message.reply("Error executing command");
     }
 });
 
-
-client.login(conf.token);
-
-// for hosting service
-Bun.serve({
-    fetch(req) {
-        return new Response("Bun!");
-    },
-    port: 3000,
+client.once(Events.ClientReady, (readyClient) => {
+    console.log(`Logged in as ${readyClient.user.tag}`);
 });
+
+process.on("unhandledRejection", (err) => {
+    console.error("Unhandled Promise Rejection: ", err);
+});
+
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exeception: ", err);
+});
+
+client.login(token);

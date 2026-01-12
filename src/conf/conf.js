@@ -1,6 +1,5 @@
-const conf = {
-    token: String(process.env.TOKEN),
-    clientId: String(process.env.CLIENT_ID),
-};
+const token = String(process.env.TOKEN);
+const applicationId = String(process.env.APPLICATION_ID);
+const prefix = String(process.env.PREFIX);
 
-export default conf;
+export { token, applicationId, prefix };
