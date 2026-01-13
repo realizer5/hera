@@ -1,55 +1,38 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import commandBuilder from "../utils/createCommand";
+import createEmbed from "../utils/createEmbed";
 
-const create = () =>
-    new SlashCommandBuilder()
-        .setName("av")
-        .setDescription("Returns pfp of given user")
-        .addUserOption((option) =>
-            option
-                .setName("target")
-                .setDescription("Target user")
-                .setRequired(false),
-        )
-        .toJSON();
-
-const buildAvatarEmbed = (target, requester) =>
-    new EmbedBuilder()
-        .setTitle(target.username)
-        .setColor("#DC143C")
-        .setImage(target.displayAvatarURL({ dynamic: true, size: 512 }))
-        .setFooter({
-            text: `Requested by ${requester.username}`,
-            iconURL: requester.displayAvatarURL({ dynamic: true, size: 64 }),
-        });
-
-const invoke = async (interaction) => {
-    if (!interaction.isChatInputCommand) {
-        return invokeMsgCommand(interaction);
-    }
-
-    const target = interaction.options.getUser("target") ?? interaction.user;
-
-    await interaction.reply({
-        embeds: [buildAvatarEmbed(target, interaction.user)],
-    });
-};
-
-const invokeMsgCommand = async (message) => {
-    const args = message.content.trim().split(/\s+/);
-    const mentionedUser = message.mentions.users.first();
-    let target = mentionedUser;
-
-    if (!target && args[1]) {
-        try {
-            target = await message.client.users.fetch(args[1]);
-        } catch {
-            return message.reply("⚠️ Invalid user ID or mention.");
+const invoke = async (ctx, requester, args) => {
+    let user;
+    if (ctx.isChatInputCommand) {
+        user = ctx.options.getUser("user");
+    } else {
+        user = ctx.mentions.users.first();
+        if (!user && args[0]) {
+            user = await ctx.client.users.fetch(args[0]);
         }
     }
+    if (!user) user = requester;
+    const embed = createEmbed({
+        title: user.username,
+        image: user.displayAvatarURL({ dynamic: true, size: 512 }),
+        requester,
+    });
+    const payload = { embeds: [embed] };
+    await ctx.reply(payload);
+};
 
-    target ??= message.author;
-
-    await message.reply({ embeds: [buildAvatarEmbed(target, message.author)] });
+const create = () => {
+    const command = commandBuilder({
+        name: "av",
+        description: "Display user avatar",
+    });
+    command.addUserOption((option) =>
+        option
+            .setName("user")
+            .setDescription("Display a user's avatar")
+            .setRequired(false),
+    );
+    return command.toJSON();
 };
 
 export { create, invoke };

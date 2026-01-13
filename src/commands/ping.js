@@ -1,8 +1,7 @@
 import commandBuilder from "../utils/createCommand";
 import createEmbed from "../utils/createEmbed";
 
-const invoke = async (ctx) => {
-    const requester = ctx.user ?? ctx.author;
+const invoke = async (ctx, requester) => {
     const responseLatency = Date.now() - ctx.createdTimestamp;
     const embed = createEmbed({
         title: "Pong!",
@@ -20,9 +19,12 @@ const invoke = async (ctx) => {
     await ctx.reply(payload);
 };
 
-const create = commandBuilder({
-    name: "ping",
-    description: "Check bot latency",
-});
+const create = () => {
+    const command = commandBuilder({
+        name: "ping",
+        description: "Check bot latency",
+    });
+    return command.toJSON();
+};
 
 export { create, invoke };

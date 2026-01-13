@@ -1,16 +1,14 @@
-import { EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import commandBuilder from "../utils/createCommand";
+import createEmbed from "../utils/createEmbed";
 
-// Creates an object with the data required by Discord"s API to create a SlashCommand
-const create = () => {
-    const command = new SlashCommandBuilder().setName("server").setDescription("Replys with some basic information about this server!");
-    return command.toJSON();
-};
-// Called by the interactionCreate event listener when the corresponding command is invoked
-const invoke = (interaction) => {
-    const guild = interaction.guild;
-
-    // Create a MessageEmbed and add an inlined field for each property displayed in the reply message
-    const embed = new EmbedBuilder().setTitle(guild.name).addFields([
+const invoke = async (ctx, requester) => {
+    const guild = ctx.guild;
+    const embed = createEmbed({
+        title: guild.name,
+        image: guild.iconURL(),
+        requester,
+    });
+    embed.addFields([
         {
             name: "Membercount",
             value: guild.memberCount.toString(),
@@ -25,11 +23,7 @@ const invoke = (interaction) => {
             }),
             inline: true,
         },
-        {
-            name: "Guild ID",
-            value: guild.id,
-            inline: true,
-        },
+        { name: "Guild ID", value: guild.id, inline: true },
         {
             name: "Voice AFK Channel",
             value: guild.afkChannel?.name ?? "None",
@@ -67,23 +61,16 @@ const invoke = (interaction) => {
         },
     ]);
 
-    // Edit some properties of the embed to make it a bit prettier
-    // Note: This could be done at the creation of the object, but I split it to make it a bit clearer
-    embed
-        .setColor("#DC143C")
-        .setFooter({ text: "Find the source code of this bot on my GitHub!" })
-        .setTimestamp()
-        .setAuthor({
-            name: "Developed by Realizer",
-            url: "https://github.com/realizer5",
-            iconURL: "https://avatars.githubusercontent.com/u/107213639?s=400&u=ec0db372e3b9e9c35f51ea391f7a23c8199b0a7d&v=4",
-        })
-        .setImage(guild.iconURL());
+    const payload = { embeds: [embed] };
+    await ctx.reply(payload);
+};
 
-    // Reply to the user
-    interaction.reply({
-        embeds: [embed],
+const create = () => {
+    const command = commandBuilder({
+        name: "server",
+        description: "Display server information",
     });
+    return command.toJSON();
 };
 
 export { create, invoke };

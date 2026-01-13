@@ -31,16 +31,17 @@ for await (const file of glob.scan(commandsDir)) {
 
 console.log(`Loaded ${client.commands.size} commands`);
 
-client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
-    const command = client.commands.get(interaction.commandName);
+client.on(Events.InteractionCreate, async (ctx) => {
+    if (!ctx.isChatInputCommand()) return;
+    const command = client.commands.get(ctx.commandName);
     if (!command) return;
     try {
-        await command.invoke(interaction);
+        const requester = ctx.user;
+        await command.invoke(ctx, requester);
     } catch (error) {
         console.error(error);
-        if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({
+        if (!ctx.replied && !ctx.deferred) {
+            await ctx.reply({
                 content: "Error executing command",
                 ephemeral: true,
             });
@@ -48,19 +49,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 });
 
-client.on(Events.MessageCreate, async (message) => {
-    if (message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return;
-    const args = message.content.slice(prefix.length).trim().split(/\s+/);
+client.on(Events.MessageCreate, async (ctx) => {
+    if (ctx.author.bot) return;
+    if (!ctx.content.startsWith(prefix)) return;
+    const args = ctx.content.slice(prefix.length).trim().split(/\s+/);
     const commandName = args.shift()?.toLowerCase();
     if (!commandName) return;
     const command = client.commands.get(commandName);
     if (!command) return;
     try {
-        await command.invoke(message);
+        const requester = ctx.author;
+        await command.invoke(ctx, requester, args);
     } catch (error) {
         console.error(error);
-        await message.reply("Error executing command");
+        await ctx.reply("Error executing command");
     }
 });
 

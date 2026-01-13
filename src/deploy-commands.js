@@ -1,5 +1,5 @@
 import { REST, Routes } from "discord.js";
-import conf from "./conf/conf";
+import { token, applicationId } from "./conf/conf";
 import path from "path";
 import { readdirSync } from "fs";
 
@@ -15,13 +15,13 @@ for (let command of commands) {
     commandsArray.push(commandFile.create());
 }
 
-const rest = new REST().setToken(conf.token);
+const rest = new REST().setToken(token);
 
 try {
     console.log("Started refreshing application (/) commands.");
     console.log(commandsArray);
 
-    await rest.put(Routes.applicationCommands(conf.applicationId), {
+    await rest.put(Routes.applicationCommands(applicationId), {
         body: commandsArray,
     });
 
