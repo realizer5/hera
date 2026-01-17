@@ -1,25 +1,19 @@
-import { Collection } from "discord.js";
 import commandBuilder from "../utils/createCommand";
 
 const invoke = async (ctx, _requester, args) => {
     const count = ctx.options?.getInteger("count") ?? Number(args[0]);
-    let add = 2;
     const payload = { content: `🧹 Deleting **${count}** messages...` };
-    if (ctx.isChatInputCommand) {
-        payload.ephemeral = true;
-        add = 0;
-    }
+    if (ctx.isChatInputCommand) payload.ephemeral = true;
     if (count < 1 || count > 100 || !count) {
         payload.content = "Please provide a number between **1 and 100**";
         return await ctx.reply(payload);
     }
-    const sent = await ctx.reply(payload);
     try {
-        console.log(count + add);
-        const deleted = await ctx.channel.bulkDelete(count + add, true);
-        payload.content = `Deleted ${deleted.size - add} messages`;
+        if (!ctx.isChatInputCommand) await ctx.delete();
+        const deleted = await ctx.channel.bulkDelete(count, true);
+        payload.content = `Deleted ${deleted.size} messages`;
         if (ctx.isChatInputCommand) {
-            await sent.edit(payload);
+            await ctx.reply(payload);
         } else {
             const sent = await ctx.channel.send(payload.content);
             setTimeout(() => {
@@ -29,7 +23,7 @@ const invoke = async (ctx, _requester, args) => {
     } catch (error) {
         console.error("Bulk delete error:", error);
         payload.content =
-            "❌ Failed to delete messages.\n" +
+            "Failed to delete messages.\n" +
             "• Messages must be **under 14 days** old";
         await sent.edit(payload);
     }
