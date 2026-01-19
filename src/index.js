@@ -1,7 +1,15 @@
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
+import {
+    Client,
+    Collection,
+    Events,
+    GatewayIntentBits,
+    MessageFlags,
+} from "discord.js";
 import { join } from "node:path";
 import { token, prefix, ownerId, roleId } from "./conf/conf";
 import { Glob } from "bun";
+import sendCaptcha from "./interactions/sendCaptcha";
+import sendModal from "./interactions/sendModal";
 
 const __dirname = import.meta.dir; // current directory of file
 
@@ -34,7 +42,15 @@ for await (const file of glob.scan(commandsDir)) {
 console.log(`Loaded ${client.commands.size} commands`);
 
 client.on(Events.InteractionCreate, async (ctx) => {
-    if (!ctx.isChatInputCommand()) return;
+    if (ctx.isButton) {
+        if (ctx.customId === "send_captcha") {
+            await sendCaptcha(ctx);
+        }
+        if (ctx.customId === "verify_captcha") {
+            await sendModal(ctx);
+        }
+    }
+    if (!ctx.isChatInputCommand) return;
     const command = client.commands.get(ctx.commandName);
     if (!command) return;
     if (ctx.user.id !== ownerId) {
@@ -48,7 +64,7 @@ client.on(Events.InteractionCreate, async (ctx) => {
         if (!ctx.replied && !ctx.deferred) {
             await ctx.reply({
                 content: "Error executing command",
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
             });
         }
     }

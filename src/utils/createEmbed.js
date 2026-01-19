@@ -5,16 +5,16 @@ const createEmbed = ({
     requester,
     color = "#DC143C",
     image,
-    fields = [],
+    description,
 }) => {
     const embed = new EmbedBuilder()
         .setTitle(title)
+        .setDescription(description)
         .setColor(color)
         .setImage(image)
-        .addFields(fields)
         .setFooter({
-            text: `Requested by ${requester.username}`,
-            iconURL: requester.displayAvatarURL({ dynamic: true, size: 64 }),
+            text: `Requested by ${requester?.username}`,
+            iconURL: requester?.displayAvatarURL({ dynamic: true, size: 64 }),
         })
         .setTimestamp();
     return embed;

@@ -1,23 +1,16 @@
 import commandBuilder from "../utils/createCommand";
 import createEmbed from "../utils/createEmbed";
+import createButton from "../utils/createButton";
 
-const invoke = async (ctx, requester, args) => {
-    let user;
-    if (ctx.isChatInputCommand) {
-        user = ctx.options.getUser("user");
-    } else {
-        user = ctx.mentions.users.first();
-        if (!user && args[0]) {
-            user = await ctx.client.users.fetch(args[0]);
-        }
-    }
-    if (!user) user = requester;
+const invoke = async (ctx, requester) => {
     const embed = createEmbed({
-        title: user.username,
-        image: user.displayAvatarURL({ dynamic: true, size: 512 }),
+        title: "Verification Required",
+        description:
+            "To access This server you need to verify first \n Click on **Veify** button to start",
         requester,
     });
-    const payload = { embeds: [embed] };
+    const button = createButton({ customId: "send_captcha", label: "Verify" });
+    const payload = { embeds: [embed], components: [button] };
     await ctx.reply(payload);
 };
 

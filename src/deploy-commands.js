@@ -16,7 +16,7 @@ for await (const file of glob.scan(commandsDir)) {
         continue;
     }
     const commandData = command.create();
-    commandsArray = commandsArray.push(commandData);
+    commandsArray.push(commandData);
 }
 
 const rest = new REST().setToken(token);

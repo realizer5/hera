@@ -1,3 +1,4 @@
+import { MessageFlags } from "discord.js";
 import commandBuilder from "../utils/createCommand";
 import createEmbed from "../utils/createEmbed";
 
@@ -15,7 +16,7 @@ const invoke = async (ctx, requester) => {
         ],
     });
     const payload = { embeds: [embed] };
-    if (ctx.isChatInputCommand) payload.ephemeral = true;
+    if (ctx.isChatInputCommand) payload.flags = MessageFlags.Ephemeral;
     await ctx.reply(payload);
 };
 
