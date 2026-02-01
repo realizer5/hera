@@ -4,19 +4,13 @@ import createEmbed from "../utils/createEmbed";
 
 const invoke = async (ctx, requester) => {
     const responseLatency = Date.now() - ctx.createdTimestamp;
-    const embed = createEmbed({
-        title: "Pong!",
-        requester,
-        fields: [
-            {
-                name: "Response Latency",
-                value: `${responseLatency} ms`,
-                inline: true,
-            },
-        ],
+    const embed = createEmbed({ title: "Pong!", requester });
+    embed.addFields({
+        name: "Response Latency",
+        value: `${responseLatency} ms`,
+        inline: true,
     });
-    const payload = { embeds: [embed] };
-    if (ctx.isChatInputCommand) payload.flags = MessageFlags.Ephemeral;
+    const payload = { embeds: [embed], flags: MessageFlags.Ephemeral };
     await ctx.reply(payload);
 };
 

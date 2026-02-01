@@ -3,7 +3,7 @@ import createButton from "../utils/createButton";
 import createCaptcha from "../utils/createCaptcha";
 import createEmbed from "../utils/createEmbed";
 
-const sendCaptcha = async (ctx) => {
+const invoke = async (ctx) => {
     const image = await createCaptcha();
     const embed = createEmbed({
         title: "Are you Human?",
@@ -30,4 +30,6 @@ const sendCaptcha = async (ctx) => {
     await ctx.reply(payload);
 };
 
-export default sendCaptcha;
+const customId = "send_captcha";
+
+export { customId, invoke };

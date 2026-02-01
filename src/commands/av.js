@@ -4,6 +4,7 @@ import createEmbed from "../utils/createEmbed";
 const invoke = async (ctx, requester, args) => {
     let user;
     if (ctx.isChatInputCommand) {
+        // not calling isChatInputCommand() cuz for message this method doesn't exist thus giving error
         user = ctx.options.getUser("user");
     } else {
         user = ctx.mentions.users.first();

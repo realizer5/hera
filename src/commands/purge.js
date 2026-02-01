@@ -3,8 +3,10 @@ import commandBuilder from "../utils/createCommand";
 
 const invoke = async (ctx, _requester, args) => {
     const count = ctx.options?.getInteger("count") ?? Number(args[0]);
-    const payload = { content: `🧹 Deleting **${count}** messages...` };
-    if (ctx.isChatInputCommand) payload.flags = MessageFlags.Ephemeral;
+    const payload = {
+        content: `🧹 Deleting **${count}** messages...`,
+        flags: MessageFlags.Ephemeral,
+    };
     if (count < 1 || count > 100 || !count) {
         payload.content = "Please provide a number between **1 and 100**";
         return await ctx.reply(payload);

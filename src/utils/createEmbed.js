@@ -5,7 +5,7 @@ const createEmbed = ({
     requester,
     color = "#DC143C",
     image,
-    description,
+    description = null,
 }) => {
     const embed = new EmbedBuilder()
         .setTitle(title)

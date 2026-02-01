@@ -8,8 +8,6 @@ import {
 import { join } from "node:path";
 import { token, prefix, ownerId, roleId } from "./conf/conf";
 import { Glob } from "bun";
-import sendCaptcha from "./interactions/sendCaptcha";
-import sendModal from "./interactions/sendModal";
 
 const __dirname = import.meta.dir; // current directory of file
 
@@ -23,8 +21,12 @@ const client = new Client({
 });
 
 client.commands = new Collection();
+client.buttons = new Collection();
+client.modals = new Collection();
 
 const commandsDir = join(__dirname, "commands");
+const buttonsDir = join(__dirname, "buttons");
+const modalsDir = join(__dirname, "modals");
 
 const glob = new Glob("*.js");
 
@@ -39,25 +41,51 @@ for await (const file of glob.scan(commandsDir)) {
     client.commands.set(commandData.name, command);
 }
 
-console.log(`Loaded ${client.commands.size} commands`);
+for await (const file of glob.scan(buttonsDir)) {
+    const filePath = join(buttonsDir, file);
+    const button = await import(filePath);
+    if (!button.customId || !button.invoke) {
+        console.warn(`[WARN] ${file} missing customId or invoke()`);
+        continue;
+    }
+    client.buttons.set(button.customId, button.invoke);
+}
+
+for await (const file of glob.scan(modalsDir)) {
+    const filePath = join(modalsDir, file);
+    const modal = await import(filePath);
+    if (!modal.customId || !modal.invoke) {
+        console.warn(`[WARN] ${file} missing customId or invoke()`);
+        continue;
+    }
+    client.modals.set(modal.customId, modal.invoke);
+}
+
+console.log(
+    `Loaded ${client.commands.size} commands, ${client.buttons.size} buttons, ${client.modals.size} modals`,
+);
 
 client.on(Events.InteractionCreate, async (ctx) => {
-    if (ctx.isButton) {
-        if (ctx.customId === "send_captcha") {
-            await sendCaptcha(ctx);
-        }
-        if (ctx.customId === "verify_captcha") {
-            await sendModal(ctx);
-        }
-    }
-    if (!ctx.isChatInputCommand) return;
-    const command = client.commands.get(ctx.commandName);
-    if (!command) return;
-    if (ctx.user.id !== ownerId) {
-        await ctx.reply("You are not **Cool** enough to do this");
-        return;
-    }
     try {
+        if (ctx.isButton()) {
+            const button = client.buttons.get(ctx.customId);
+            if (!button) return;
+            await button(ctx);
+            return;
+        }
+        if (ctx.isModalSubmit()) {
+            const modal = client.modals.get(ctx.customId);
+            if (!modal) return;
+            await modal(ctx);
+            return;
+        }
+        if (!ctx.isChatInputCommand()) return;
+        const command = client.commands.get(ctx.commandName);
+        if (!command) return;
+        if (ctx.user.id !== ownerId) {
+            await ctx.reply("You are not **Cool** enough to do this");
+            return;
+        }
         await command.invoke(ctx, ctx.user);
     } catch (error) {
         console.error(error);
