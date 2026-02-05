@@ -1,3 +1,10 @@
+Bun.serve({
+    fetch(_req) {
+        return new Response("Hera is started!");
+    },
+    port: 8000,
+});
+
 import {
     Client,
     Collection,
@@ -141,10 +148,3 @@ process.on("uncaughtException", (err) => {
 });
 
 client.login(token);
-
-Bun.serve({
-    fetch(_req) {
-        return new Response("Bun!");
-    },
-    port: 8000,
-});
