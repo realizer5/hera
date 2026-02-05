@@ -4,7 +4,7 @@ import createCaptcha from "../utils/createCaptcha";
 import createEmbed from "../utils/createEmbed";
 
 const invoke = async (ctx) => {
-    const image = await createCaptcha();
+    const image = await createCaptcha(ctx.user.id);
     const embed = createEmbed({
         title: "Are you Human?",
         description: "**Please type the Captcha below**",

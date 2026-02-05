@@ -16,8 +16,8 @@ const invoke = async (ctx, requester) => {
 
 const create = () => {
     const command = commandBuilder({
-        name: "captcha",
-        description: "Generate a Captcha",
+        name: "verify",
+        description: "Set channel to Verification",
     });
     return command.toJSON();
 };

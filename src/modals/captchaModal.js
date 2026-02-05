@@ -1,4 +1,5 @@
 import { MessageFlags } from "discord.js";
+import { verifyCaptcha } from "../utils/createCaptcha";
 
 const invoke = async (ctx) => {
     const answer = ctx.fields.getTextInputValue("answer_captcha");
@@ -6,7 +7,8 @@ const invoke = async (ctx) => {
         content: "You are verified",
         flags: MessageFlags.Ephemeral,
     };
-    if (answer !== "abcde") {
+    const verify = verifyCaptcha(ctx.user.id, answer);
+    if (!verify) {
         payload.content = "Incorrect captcha";
         await ctx.reply(payload);
         return;

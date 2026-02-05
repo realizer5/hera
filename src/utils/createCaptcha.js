@@ -29,7 +29,12 @@ const createCaptchaImage = (code, fakeCode) => {
     return canvas.toBuffer("image/png");
 };
 
-const createCaptcha = async (length = 5) => {
+const captchaStore = new Map();
+let interval;
+
+const createCaptcha = async (userId) => {
+    const length = 5;
+    const captchaExpiry = 2 * 60 * 1000; // 2 minutes
     const chars = "ABCDEFGHJKLMNPRSTUVWXYZ23456789";
     let code = "";
     let fakeCode = "";
@@ -40,7 +45,46 @@ const createCaptcha = async (length = 5) => {
     }
 
     const image = createCaptchaImage(code, fakeCode.toLowerCase());
+    captchaStore.set(userId, {
+        value: code,
+        expires: Date.now() + captchaExpiry,
+    });
+
+    if (interval) {
+        if (captchaStore.length < 2) clearInterval(interval);
+    } else {
+        if (captchaStore.length > 1) captchaCleanup();
+    }
+
     return image;
+};
+
+export const verifyCaptcha = (userId, input) => {
+    const data = captchaStore.get(userId);
+    if (!data) return false;
+    if (Date.now() > data.expires) {
+        captchaStore.delete(userId);
+        return false;
+    }
+    const valid = data.value === input.toUpperCase();
+    if (valid) captchaStore.delete(userId);
+    return valid;
+};
+
+const captchaCleanup = () => {
+    clearInterval(interval);
+    interval = setInterval(
+        () => {
+            const now = Date.now();
+            for (const [userId, data] of captchaStore.entries()) {
+                if (now > data.expires) {
+                    captchaStore.delete(userId);
+                }
+            }
+            console.log(captchaStore);
+        },
+        2 * 60 * 1000,
+    );
 };
 
 export default createCaptcha;
