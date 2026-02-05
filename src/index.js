@@ -1,10 +1,3 @@
-Bun.serve({
-    fetch(_req) {
-        return new Response("Hera is started!");
-    },
-    port: 8000,
-});
-
 import {
     Client,
     Collection,
