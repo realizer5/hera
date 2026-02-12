@@ -1,24 +1,30 @@
 import { MessageFlags } from "discord.js";
 import commandBuilder from "../utils/createCommand";
 
-const invoke = async (ctx, args) => {
+const invoke = async (ctx, _requester, args) => {
     let user;
     let role;
     if (ctx.isChatInputCommand) {
         user = ctx.options.getMember("user");
         role = ctx.options.getRole("role");
     } else {
-        user = ctx.mentions.members.first();
-        role = ctx.mentions.roles.first();
+        user =
+            ctx.mentions.members.first() ??
+            (await ctx.guild.members.fetch(args[0]));
+        role = ctx.mentions.roles.first() ?? ctx.guild.roles.cache.get(args[1]);
     }
+
     const payload = {
-        content: `**${role.name}** has been given to **${user.user.tag}**`,
+        content: `**${role}** has been given to **${user}**`,
+        allowedMentions: { parse: ["users"], repliedUser: true },
         flags: MessageFlags.Ephemeral,
     };
+
     if (!user || !role) {
         payload.content = "User or Role not found";
         return await ctx.reply(payload);
     }
+
     if (user.roles.cache.has(role.id)) {
         payload.content = "User already has this role";
         return ctx.reply(payload);

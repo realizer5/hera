@@ -6,7 +6,7 @@ import {
     MessageFlags,
 } from "discord.js";
 import { join } from "node:path";
-import { token, prefix, ownerId, roleId } from "./conf/conf";
+import { token, prefix, ownerId, roleId, ownerGfId } from "./conf/conf";
 import { Glob } from "bun";
 
 const __dirname = import.meta.dir; // current directory of file
@@ -82,7 +82,7 @@ client.on(Events.InteractionCreate, async (ctx) => {
         if (!ctx.isChatInputCommand()) return;
         const command = client.commands.get(ctx.commandName);
         if (!command) return;
-        if (ctx.user.id !== ownerId) {
+        if (ctx.author.id !== ownerId && ctx.author.id !== ownerGfId) {
             await ctx.reply("You are not **Cool** enough to do this");
             return;
         }
@@ -104,12 +104,12 @@ client.on(Events.MessageCreate, async (ctx) => {
     const args = ctx.content.slice(prefix.length).trim().split(/\s+/);
     const commandName = args.shift()?.toLowerCase();
     if (!commandName) return;
-    if (ctx.author.id !== ownerId) {
+    const command = client.commands.get(commandName);
+    if (!command) return;
+    if (ctx.author.id !== ownerId && ctx.author.id !== ownerGfId) {
         await ctx.reply("You are not **Cool** enough to do this");
         return;
     }
-    const command = client.commands.get(commandName);
-    if (!command) return;
     try {
         await command.invoke(ctx, ctx.author, args);
     } catch (error) {
