@@ -30,7 +30,7 @@ const createCaptchaImage = (code, fakeCode) => {
 };
 
 const captchaStore = new Map();
-let interval;
+let cleanerInterval;
 
 const createCaptcha = async (userId) => {
     const length = 5;
@@ -50,12 +50,9 @@ const createCaptcha = async (userId) => {
         expires: Date.now() + captchaExpiry,
     });
 
-    if (interval) {
-        if (captchaStore.length < 2) clearInterval(interval);
-    } else {
-        if (captchaStore.length > 1) captchaCleanup();
+    if (captchaStore.size > 1 && !cleanerInterval) {
+        captchaCleanup();
     }
-
     return image;
 };
 
@@ -72,16 +69,16 @@ export const verifyCaptcha = (userId, input) => {
 };
 
 const captchaCleanup = () => {
-    clearInterval(interval);
-    interval = setInterval(
+    clearInterval(cleanerInterval);
+    cleanerInterval = setInterval(
         () => {
+            if (captchaStore.size < 1) clearInterval(cleanerInterval);
             const now = Date.now();
             for (const [userId, data] of captchaStore.entries()) {
                 if (now > data.expires) {
                     captchaStore.delete(userId);
                 }
             }
-            console.log(captchaStore);
         },
         2 * 60 * 1000,
     );

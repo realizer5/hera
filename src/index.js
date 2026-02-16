@@ -6,7 +6,13 @@ import {
     MessageFlags,
 } from "discord.js";
 import { join } from "node:path";
-import { token, prefix, ownerId, roleId, ownerGfId } from "./conf/conf";
+import {
+    token,
+    prefix,
+    ownerId,
+    ownerGfId,
+    unverifiedRoleId,
+} from "./conf/conf";
 import { Glob } from "bun";
 
 const __dirname = import.meta.dir; // current directory of file
@@ -120,7 +126,7 @@ client.on(Events.MessageCreate, async (ctx) => {
 
 client.on("guildMemberAdd", async (ctx) => {
     try {
-        const role = ctx.guild.roles.cache.get(roleId);
+        const role = ctx.guild.roles.cache.get(unverifiedRoleId);
         if (!role) return;
         await ctx.roles.add(role);
     } catch (error) {

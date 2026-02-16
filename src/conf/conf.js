@@ -4,5 +4,6 @@ const prefix = String(process.env.PREFIX);
 const ownerId = String(process.env.OWNER_ID);
 const ownerGfId = String(process.env.OWNER_GF_ID);
 const roleId = String(process.env.ROLE_ID);
+const unverifiedRoleId = String(process.env.UNVERIFIED_ROLE_ID);
 
-export { token, applicationId, prefix, ownerId, roleId, ownerGfId };
+export { token, applicationId, prefix, ownerId, roleId, ownerGfId, unverifiedRoleId};
