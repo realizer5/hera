@@ -1,4 +1,9 @@
-import { createCanvas } from "canvas";
+import { createCanvas, registerFont } from "canvas";
+import { join } from "node:path";
+
+registerFont(join(__dirname, "../fonts/JetBrainsMono-VariableFont_wght.ttf"), {
+    family: "JetBrainsMono",
+});
 
 const createCaptchaImage = (code, fakeCode) => {
     const canvas = createCanvas(320, 120);
@@ -6,7 +11,7 @@ const createCaptchaImage = (code, fakeCode) => {
     ctx.fillStyle = "#1e1f22";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#4f4f55";
-    ctx.font = "40px sans-serif";
+    ctx.font = "40px JetBrainsMono";
     for (let i = 0; i < fakeCode.length; i++) {
         const rand = Math.random() * (100 - 20) + 40;
         ctx.fillText(fakeCode[i], i * 50 + 50, rand);
@@ -14,7 +19,7 @@ const createCaptchaImage = (code, fakeCode) => {
     ctx.fillStyle = "#DC143C";
     ctx.strokeStyle = "#DC143C";
     ctx.lineWidth = 5;
-    ctx.font = "bold 48px monospace";
+    ctx.font = "bold 48px JetBrainsMono";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.beginPath();
@@ -35,7 +40,7 @@ let cleanerInterval;
 const createCaptcha = async (userId) => {
     const length = 5;
     const captchaExpiry = 2 * 60 * 1000; // 2 minutes
-    const chars = "ABCDEFGHJKLMNPRSTUVWXYZ23456789";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
     let fakeCode = "";
 
