@@ -1,7 +1,7 @@
 import { createCanvas, registerFont } from "canvas";
 import { join } from "node:path";
 
-registerFont(join(__dirname, "../fonts/JetBrainsMono-VariableFont_wght.ttf"), {
+registerFont(join(__dirname, "../../fonts/JetBrainsMono-VariableFont_wght.ttf"), {
     family: "JetBrainsMono",
 });
 
