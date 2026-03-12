@@ -6,7 +6,7 @@ const createCaptchaImage = (code, fakeCode) => {
     ctx.fillStyle = "#1e1f22";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#4f4f55";
-    ctx.font = "40px Roboto";
+    ctx.font = "40px sans-serif";
     for (let i = 0; i < fakeCode.length; i++) {
         const rand = Math.random() * (100 - 20) + 40;
         ctx.fillText(fakeCode[i], i * 50 + 50, rand);
@@ -14,7 +14,7 @@ const createCaptchaImage = (code, fakeCode) => {
     ctx.fillStyle = "#DC143C";
     ctx.strokeStyle = "#DC143C";
     ctx.lineWidth = 5;
-    ctx.font = "bold 48px Sans";
+    ctx.font = "bold 48px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.beginPath();
