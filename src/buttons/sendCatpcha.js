@@ -27,7 +27,12 @@ const invoke = async (ctx) => {
         components: [button],
         flags: MessageFlags.Ephemeral,
     };
-    await ctx.reply(payload);
+    if (!image)
+        return ctx.reply({
+            content: "Captcha Already generated wait 2 minutes to try again",
+            flags: MessageFlags.Ephemeral,
+        });
+    ctx.reply(payload);
 };
 
 const customId = "send_captcha";

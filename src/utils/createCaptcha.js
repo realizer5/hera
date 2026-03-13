@@ -1,9 +1,10 @@
 import { createCanvas, registerFont } from "canvas";
 import { join } from "node:path";
 
-registerFont(join(__dirname, "../../fonts/JetBrainsMono-VariableFont_wght.ttf"), {
-    family: "JetBrainsMono",
-});
+registerFont(
+    join(__dirname, "../../fonts/JetBrainsMono-Regular.ttf"),
+    { family: "JetBrainsMono" },
+);
 
 const createCaptchaImage = (code, fakeCode) => {
     const canvas = createCanvas(320, 120);
@@ -38,6 +39,7 @@ const captchaStore = new Map();
 let cleanerInterval;
 
 const createCaptcha = async (userId) => {
+    if (captchaStore.has(userId)) return false;
     const length = 5;
     const captchaExpiry = 2 * 60 * 1000; // 2 minutes
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

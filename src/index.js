@@ -12,6 +12,7 @@ import {
     ownerId,
     ownerGfId,
     unverifiedRoleId,
+    roleId,
 } from "./conf/conf";
 import { Glob } from "bun";
 
@@ -73,6 +74,15 @@ console.log(
 
 client.on(Events.InteractionCreate, async (ctx) => {
     try {
+        if (ctx.isStringSelectMenu()) {
+            const [action, userId] = ctx.customId.split(":");
+            if (action !== "role_select") return;
+            const memeber = await ctx.guild.members.fetch(userId);
+            const selectedRoles = ctx.values;
+            for (const role of selectedRoles) {
+                memeber.roles.add(role);
+            }
+        }
         if (ctx.isButton()) {
             const button = client.buttons.get(ctx.customId);
             if (!button) return;
