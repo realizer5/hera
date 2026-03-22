@@ -16,13 +16,12 @@ const invoke = async (ctx, requester, args) => {
 
     const roles = ctx.guild.roles.cache
         .filter((role) => role.name !== "@everyone")
-        .first(5); // max 25 options
 
     const menu = new StringSelectMenuBuilder()
         .setCustomId(`role_select:${user.id}`)
         .setPlaceholder("Select your roles")
         .setMaxValues(5)
-        .addOptions(
+        .setOptions(
             roles.map((role) => ({
                 label: role.name,
                 value: role.id,
